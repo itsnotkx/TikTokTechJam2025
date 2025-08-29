@@ -1,32 +1,17 @@
-// import { Text, View } from "react-native";
-
-// export default function Index() {
-//   return (
-//     <View
-//       style={{
-//         flex: 1,
-//         justifyContent: "center",
-//         alignItems: "center",
-//       }}
-//     >
-//       <Text>Upload Video</Text>
-//     </View>
-//   );
-// }
-
-
-import React, { useState } from "react";
-import { Button, View, Platform } from "react-native";
+import React from "react";
+import { Button, View } from "react-native";
 import { Video } from "expo-av";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import {useVideo} from "../context/VideoContext";
 
 export default function Index() {
-  const [videoUri, setVideoUri] = useState<string | null>(null);
+  // const [videoUri, setVideoUri] = useState<string | null>(null);
+  const {videoUri, setVideoUri} = useVideo();
 
   const pickVideo = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
       allowsEditing: true,
       quality: 1
     });
@@ -46,7 +31,6 @@ export default function Index() {
           source={{ uri: videoUri }}
           style={{ width: "100%", height: 300 }}
           useNativeControls
-          // resizeMode="contain"
         />
       )}
     </View>
