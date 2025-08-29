@@ -6,7 +6,7 @@ export default function RootLayout() {
     <VideoProvider>
       <Stack>
         <Stack.Screen name="index" options={{ title: "Home", headerShown: false }} />
-        <Stack.Screen name="editor" options={{ title: "Editor", headerShown: false }} />
+        <Stack.Screen name="editor" options={{ title: "Editor", headerShown: true }} />
       </Stack>
     </VideoProvider>
   );
