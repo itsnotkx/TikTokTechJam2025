@@ -26,13 +26,13 @@ export default function Index() {
   return (
     <View style={{ justifyContent: "center", alignItems: "center", flex: 1}}>
       <Button title="Upload Video" onPress={pickVideo} />
-      {videoUri && (
+      {/* {videoUri && (
         <Video
           source={{ uri: videoUri }}
           style={{ width: "100%", height: 300 }}
           useNativeControls
         />
-      )}
+      )} */}
     </View>
   );
 }
