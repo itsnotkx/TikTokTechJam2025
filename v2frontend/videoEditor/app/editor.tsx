@@ -49,7 +49,7 @@ const EditorContent: React.FC = () => {
       </ScrollView>
 
       {/* Controls fixed at bottom*/}
-      <EditorControls />
+      {/* <EditorControls /> */}
     </View>
   );
 };

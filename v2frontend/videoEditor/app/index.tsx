@@ -1,13 +1,15 @@
 import React from "react";
-import { Button, View } from "react-native";
+import { Button, View, Text} from "react-native";
 import { Video } from "expo-av";
 import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import {useVideo} from "../context/VideoContext";
+import { useState } from "react";
 
 export default function Index() {
   // const [videoUri, setVideoUri] = useState<string | null>(null);
   const {videoUri, setVideoUri} = useVideo();
+  const [resp, setResp] = useState<string | null>(null);
 
   const pickVideo = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -23,9 +25,19 @@ export default function Index() {
     }
   };
 
+  const backendTest = async () => {
+    fetch("http://localhost:8000/")
+      .then((response) => response.json())
+      .then((data) => setResp(data.message));
+
+    console.log("resp:", resp);
+  };
+
   return (
     <View style={{ justifyContent: "center", alignItems: "center", flex: 1}}>
       <Button title="Upload Video" onPress={pickVideo} />
+      <Button title="Backend Testing" onPress={backendTest} />
+      {resp ? <Text>{JSON.stringify(resp)}</Text> : <Text>No response</Text>}
       {/* {videoUri && (
         <Video
           source={{ uri: videoUri }}
