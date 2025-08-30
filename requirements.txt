@@ -58,3 +58,4 @@ ultralytics==8.3.189
 ultralytics-thop==2.0.16
 urllib3==2.5.0
 watchdog==6.0.0
+imageio_ffmpeg

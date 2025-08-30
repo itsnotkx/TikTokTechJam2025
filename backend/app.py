@@ -12,6 +12,8 @@ from collections import deque
 from scipy.spatial.distance import cdist
 import math
 import time
+import subprocess
+import imageio_ffmpeg as ffmpeg
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -301,6 +303,18 @@ class YOLOAutoBlur:
             cap.release()
             out.release()
 
+def add_audio_to_video(original_video, processed_video, output_path):
+    ffmpeg_path = ffmpeg.get_ffmpeg_exe()
+    command = [
+        ffmpeg_path, "-y",
+        "-i", processed_video,
+        "-i", original_video,
+        "-c", "copy",
+        "-map", "0:v:0",
+        "-map", "1:a:0",
+        output_path
+    ]
+    subprocess.run(command, check=True)
 
 # Streamlit App
 def main():
@@ -395,6 +409,9 @@ def main():
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_output:
                     temp_output_path = temp_output.name
                 
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as audio_output:
+                    audio_output_path = audio_output.name
+
                 progress_bar = st.progress(0)
                 status_text = st.empty()
                 
@@ -421,13 +438,15 @@ def main():
                 progress_bar.progress(1.0)
                 status_text.text(f"Processing complete! ({processing_time:.1f}s)")
                 
-                if os.path.exists(temp_output_path) and os.path.getsize(temp_output_path) > 0:
-                    with open(temp_output_path, 'rb') as f:
+                add_audio_to_video(temp_input_path, temp_output_path, audio_output_path)
+
+                if os.path.exists(audio_output_path) and os.path.getsize(audio_output_path) > 0:
+                    with open(audio_output_path, 'rb') as f:
                         video_data = f.read()
                     
                     file_size_mb = len(video_data) / (1024 * 1024)
                     st.success(f"Video processed successfully! Output size: {file_size_mb:.1f} MB")
-                    
+
                     st.download_button(
                         label="Download Processed Video",
                         data=video_data,
