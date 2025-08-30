@@ -6,7 +6,7 @@ app = FastAPI()
 def read_root():
     return {"message": "Hello, FastAPI!"}
 
-@app.post("/")
+@app.post("/jobs")
 def process_video():
     # add model
-    return {"message": "Hello, FastAPI!"}
+    return {"jobId": 10}

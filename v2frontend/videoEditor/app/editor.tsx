@@ -84,6 +84,7 @@ const ProcessingGate: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }, [upload.status]);
 
   if (upload.status === 'error') {
+    console.log('Upload failed:', message);
     return (
       <View style={styles.processingContainer}>
         <Text style={styles.errorTitle}>Processing failed</Text>

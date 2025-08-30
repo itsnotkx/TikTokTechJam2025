@@ -53,6 +53,8 @@ def process_video(input_path, output_path, fps_sample=10, use_gpu=False):
 
     print(f"[INFO] Processing {input_path} ({fps:.1f} fps) → {output_path}")
     frame_idx = 0
+
+    detections = []
     while True:
         ok, frame = cap.read()
         if not ok:
@@ -62,6 +64,12 @@ def process_video(input_path, output_path, fps_sample=10, use_gpu=False):
             results = reader.readtext(frame)
             for (bbox, text, conf) in results:
                 if is_pii(text):
+                    detections.append({
+                        "frame": frame_idx,
+                        "text": text,
+                        "bbox": pad_bbox(bbox, pad=0.1)
+                    })
+
                     x1, y1, x2, y2 = pad_bbox(bbox, pad=0.1)
                     blur_rect(frame, x1, y1, x2, y2)
 
@@ -70,6 +78,10 @@ def process_video(input_path, output_path, fps_sample=10, use_gpu=False):
 
     cap.release()
     out.release()
+    
+    print(f"[INFO] Detected {len(detections)} PII instances:")
+    for item in detections:
+        print(f"Frame {item['frame']}: {item['text']} at {item['bbox']}")
     print(f"[DONE] Saved to {output_path}")
 
 if __name__ == "__main__":

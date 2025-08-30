@@ -340,6 +340,7 @@ async def detect_pii(file: UploadFile = File(...)):
             json.dump(metadata, f)
         
         return {
+            "jobId": video_id,
             "video_id": video_id,
             "pii_objects": pii_objects
         }

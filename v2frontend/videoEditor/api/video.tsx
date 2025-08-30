@@ -32,7 +32,7 @@ export const api = {
 
   // Proper file upload
   uploadVideo: (form: FormData) =>
-    request<{ jobId: string }>("/jobs", { method: "POST", body: form }),
+    request<{ jobId: string, videoUri: string, pill_objects: any[] }>("/detect-pii", { method: "POST", body: form }),
 
   getJob: (jobId: string) =>
     request<{ status: string; result?: any }>(`/jobs/${jobId}`, { method: "GET" }),

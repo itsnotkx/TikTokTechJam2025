@@ -6,18 +6,18 @@ import { useVideo } from "../context/VideoContext";
 import { api } from "../api/video";
 
 export default function Index() {
-  const { setVideoUri, setUpload } = useVideo();
+  const { upload, setVideoUri, setUpload } = useVideo();
   const [busy, setBusy] = useState(false);
 
-  const startVideoJob = async (videoUri: string): Promise<string> => {
+  const startVideoJob = async (videoUri: string) => {
     const form = new FormData();
     form.append("file", {
       uri: videoUri,
       name: "clip.mp4",
       type: "video/mp4",
     } as any);
-    const { jobId } = await api.uploadVideo(form); // <-- uses FormData-safe endpoint
-    return jobId;                                   // <-- return a string, not a cast
+    const res = await api.uploadVideo(form); // <-- uses FormData-safe endpoint
+    return res;                                   // <-- return a string, not a cast
   };
 
   const pickVideo = async () => {
@@ -34,8 +34,12 @@ export default function Index() {
       setVideoUri(uri);
       setUpload({ status: "uploading" });
 
-      const jobId = await startVideoJob(uri);       // <-- now a string
+      const {jobId, videoUri, pill_objects} = await startVideoJob(uri);       // <-- now a string
       setUpload({ status: "processing", jobId });       // <-- use a valid status from your union
+
+      console.log("Upload started:", jobId);
+      console.log("Pill objects:", pill_objects);
+      console.log("Upload status:", upload.status);
 
       router.push("/editor");
     } catch (e: any) {
