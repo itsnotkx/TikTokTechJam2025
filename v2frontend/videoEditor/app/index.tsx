@@ -1,50 +1,56 @@
-import React from "react";
-import { Button, View, Text} from "react-native";
-import { Video } from "expo-av";
-import { router } from "expo-router";
+import React, { useState } from "react";
+import { Button, View, ActivityIndicator, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import {useVideo} from "../context/VideoContext";
-import { useState } from "react";
+import { router } from "expo-router";
+import { useVideo } from "../context/VideoContext";
+import { api } from "../api/video";
 
 export default function Index() {
-  // const [videoUri, setVideoUri] = useState<string | null>(null);
-  const {videoUri, setVideoUri} = useVideo();
-  const [resp, setResp] = useState<string | null>(null);
+  const { setVideoUri, setUpload } = useVideo();
+  const [busy, setBusy] = useState(false);
+
+  const startVideoJob = async (videoUri: string): Promise<string> => {
+    const form = new FormData();
+    form.append("file", {
+      uri: videoUri,
+      name: "clip.mp4",
+      type: "video/mp4",
+    } as any);
+    const { jobId } = await api.uploadVideo(form); // <-- uses FormData-safe endpoint
+    return jobId;                                   // <-- return a string, not a cast
+  };
 
   const pickVideo = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Videos,
       allowsEditing: true,
-      quality: 1
+      quality: 1,
     });
+    if (result.canceled) return;
 
-    if (!result.canceled) {
-      console.log("result:", result.assets[0].uri);
-      setVideoUri(result.assets[0].uri);
+    const uri = result.assets[0].uri;
+    setBusy(true);
+    try {
+      setVideoUri(uri);
+      setUpload({ status: "uploading" });
+
+      const jobId = await startVideoJob(uri);       // <-- now a string
+      setUpload({ status: "processing", jobId });       // <-- use a valid status from your union
+
       router.push("/editor");
+    } catch (e: any) {
+      const message = e?.message ?? "Unknown error";
+      setUpload({ status: "error", message });
+      Alert.alert("Upload failed", message);
+    } finally {
+      setBusy(false);
     }
   };
 
-  const backendTest = async () => {
-    fetch("http://localhost:8000/")
-      .then((response) => response.json())
-      .then((data) => setResp(data.message));
-
-    console.log("resp:", resp);
-  };
-
   return (
-    <View style={{ justifyContent: "center", alignItems: "center", flex: 1}}>
-      <Button title="Upload Video" onPress={pickVideo} />
-      <Button title="Backend Testing" onPress={backendTest} />
-      {resp ? <Text>{JSON.stringify(resp)}</Text> : <Text>No response</Text>}
-      {/* {videoUri && (
-        <Video
-          source={{ uri: videoUri }}
-          style={{ width: "100%", height: 300 }}
-          useNativeControls
-        />
-      )} */}
+    <View style={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
+      <Button title={busy ? "Starting…" : "Upload Video"} onPress={pickVideo} disabled={busy} />
+      {busy && <ActivityIndicator style={{ marginTop: 12 }} />}
     </View>
   );
 }
