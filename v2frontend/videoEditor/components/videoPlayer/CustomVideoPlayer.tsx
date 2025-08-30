@@ -79,9 +79,9 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
         ref={videoRef}
         source={{ uri: videoUri }}
         style={styles.video}
-        resizeMode="contain"
+        ResizeMode="contain"
         shouldPlay={isPlaying}
-        isLooping={false}
+        isLooping={true}
         onPlaybackStatusUpdate={onPlaybackStatusUpdate}
       />
     </View>
@@ -91,7 +91,7 @@ export const CustomVideoPlayer: React.FC<CustomVideoPlayerProps> = ({
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#000',
-    borderRadius: 8,
+    borderRadius: 0,
     overflow: 'hidden',
   },
   video: {
