@@ -315,7 +315,7 @@ def main():
     
     model_path = st.sidebar.text_input(
         "Model Path", 
-        value="runs/detect/blur_detection_model5/weights/best.pt",
+        value="backend/runs/detect/blur_detection_model5/weights/best.pt",
         help="Path to your trained YOLO model"
     )
     
