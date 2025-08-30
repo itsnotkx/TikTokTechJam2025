@@ -10,10 +10,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       init.body instanceof FormData
         ? init.headers                                 // let browser set multipart boundary
         : { "Content-Type": "application/json", ...(init.headers || {}) };
-    console.log("API Request:", path, init.method || "GET", init.body);
+    // console.log("API Request:", path, init.method || "GET", init.body);
     console.log("Full URL:", `${API_URL}${path}`);
     const res = await fetch(`${API_URL}${path}`, { ...init, signal: ac.signal, headers });
-
+    console.log("Full URL:", `${res}`);
     if (!res.ok) {
       const text = await res.text().catch(() => "");
        throw new Error(`HTTP ${res.status} ${text}`);

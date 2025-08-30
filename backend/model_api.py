@@ -6,6 +6,7 @@ import yaml
 import logging
 import uuid
 from collections import deque, defaultdict
+from fastapi.responses import JSONResponse
 from scipy.spatial.distance import cdist
 import math
 from fastapi import FastAPI, UploadFile, File, HTTPException, Request
@@ -336,9 +337,16 @@ async def detect_pii(file: UploadFile = File(...)):
             "frame_height": int(frame_height)
         }
         metadata_path = os.path.join(UPLOAD_DIR, f"{video_id}_metadata.json")
+        processed_path = os.path.join(PROCESSED_DIR, f"{video_id}_results.json")
         with open(metadata_path, "w") as f:
             json.dump(metadata, f)
-        
+        print("PII Objects: ", pii_objects)
+        with open(processed_path, "w") as f:
+            json.dump({
+                "jobId": video_id,
+                "video_id": video_id,
+                "pii_objects": pii_objects
+            }, f) 
         return {
             "jobId": video_id,
             "video_id": video_id,
@@ -403,15 +411,16 @@ async def censor_pii(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/download-video/{video_id}")
+@app.get("/getCensored/{video_id}")
 async def download_video(video_id: str):
     """
     Download the censored video
     """
     try:
         # Look for blurred video
+        # PROCESSED_DIR
         video_path = os.path.join(PROCESSED_DIR, f"{video_id}.mp4")
-        
+        print("Download request received for video_id:", video_id)
         if not os.path.exists(video_path):
             raise HTTPException(status_code=404, detail="Censored video not found")
         
@@ -420,13 +429,36 @@ async def download_video(video_id: str):
             media_type='video/mp4',
             filename=f"{video_id}.mp4"
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error in download_video: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+logger = logging.getLogger(__name__)
 
+@app.get("/jobs/{video_id}")
+async def get_job(video_id: str):
+    """
+    Return the JSON results of the processed video
+    """
+    try:
+        video_path = os.path.join(PROCESSED_DIR, f"{video_id}.json")
+        if not os.path.exists(video_path):
+            raise HTTPException(status_code=404, detail="Results not found")
+
+        # Read JSON contents from file
+        with open(video_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        return JSONResponse(content=data)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in get_job: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")
 async def health_check():
@@ -450,4 +482,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
